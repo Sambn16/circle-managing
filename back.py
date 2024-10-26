@@ -5,16 +5,16 @@ def connect():
     conn = sqlite3.connect("people.db")
     cur = conn.cursor()
     cur.execute(
-        'CREATE TABLE IF NOT EXISTS friends (id INTEGER PRIMARY KEY, fullname TEXT, age INTEGER, phone INTEGER, location TEXT)'
+        'CREATE TABLE IF NOT EXISTS friends (id INTEGER PRIMARY KEY, fullname TEXT, birthday INTEGER, phone INTEGER, location TEXT)'
     )
     conn.commit()
     conn.close()
 
 
-def insert(fullname, age, phone, location):
+def insert(fullname, birthday, phone, location):
     conn = sqlite3.connect("people.db")
     cur = conn.cursor()
-    cur.execute("INSERT INTO friends VALUES (NULL, ?,?,?,?)", (fullname, age, phone, location))
+    cur.execute("INSERT INTO friends VALUES (NULL, ?,?,?,?)", (fullname, birthday, phone, location))
     conn.commit()
     conn.close()
 
@@ -45,10 +45,10 @@ def remove(id):
     conn.close()
 
 
-def edit(id, fullname, age, phone, location):
+def edit(id, fullname, birthday, phone, location):
     conn = sqlite3.connect("people.db")
     cur = conn.cursor()
-    cur.execute("UPDATE friends SET fullname=?, age=?, phone=?, location=? WHERE id=?", (fullname, age, phone, location, id))
+    cur.execute("UPDATE friends SET fullname=?, birthday=?, phone=?, location=? WHERE id=?", (fullname, birthday, phone, location, id))
     conn.commit()
     conn.close()
 

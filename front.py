@@ -7,11 +7,13 @@ from tkinter import messagebox
 from customtkinter import *
 from CTkListbox import *
 from CTkTable import *
+from khayyam import *
+
 
 
 window = CTk()
 window.title("hey")
-window.geometry('550x400')
+window.geometry('575x400')
 
 def clear_list():
     listOfItems.delete(0,END)
@@ -23,8 +25,8 @@ def clear_list():
 fullnameLabel = CTkLabel(window, text="Full Name")
 fullnameLabel.grid(row=0, column=0, pady= 10)
 
-ageLabel = CTkLabel(window, text="Age")
-ageLabel.grid(row=0, column=2, pady=10, padx=15)
+birthdayLabel = CTkLabel(window, text="birthday")
+birthdayLabel.grid(row=0, column=2, pady=10, padx=15)
 
 phoneLabel = CTkLabel(window, text="Phone")
 phoneLabel.grid(row=1, column=0)
@@ -40,9 +42,9 @@ fullnameText = StringVar()                    # inserting full name
 fullnameEntry = CTkEntry(window, textvariable=fullnameText)
 fullnameEntry.grid(row=0, column=1)
 
-ageText = StringVar()                    # inserting age
-ageEntry = CTkEntry(window,textvariable=ageText)
-ageEntry.grid(row=0, column=3)
+birthdayText = StringVar()                    # inserting birthday
+birthdayEntry = CTkEntry(window,textvariable=birthdayText)
+birthdayEntry.grid(row=0, column=3)
 
 phoneText = StringVar()                    # inserting phone
 phoneEntry = CTkEntry(window, textvariable=phoneText)
@@ -68,8 +70,8 @@ def get_selected_row(event):
     fullnameEntry.delete(0, END)
     fullnameEntry.insert(END, selected[1])
 
-    ageEntry.delete(0, END)
-    ageEntry.insert(END, selected[2])
+    birthdayEntry.delete(0, END)
+    birthdayEntry.insert(END, selected[2])
 
     phoneEntry.delete(0, END)
     phoneEntry.insert(END, selected[3])
@@ -95,12 +97,12 @@ viewButton.grid(row=3, column=2, columnspan=2)
 
 
 def add_item():       # adds the inserted item to the list
-    if fullnameText.get() == "" or ageText.get() == "" or phoneText.get() == "" or locationText.get() == "":    # check if the user has not entered anything
-        messagebox.showwarning("Empty Fields", "Please fill up all the boxes.")
+    if fullnameText.get() == "" or birthdayText.get() == "" or phoneText.get() == "" or locationText.get() == "":    # check if the user has not entered anything
+        messbirthdaybox.showwarning("Empty Fields", "Please fill up all the boxes.")
     else:
-        back.insert(fullnameText.get(), ageText.get(), phoneText.get(), locationText.get())
+        back.insert(fullnameText.get(), birthdayText.get(), phoneText.get(), locationText.get())
         fullnameEntry.delete(0, END)
-        ageEntry.delete(0, END)
+        birthdayEntry.delete(0, END)
         phoneEntry.delete(0, END)
         locationEntry.delete(0, END)
     view_items()
@@ -110,9 +112,9 @@ addButton.grid(row=4, column=2, columnspan=2)
 
 
 def edit_item():
-    back.edit(selected[0], fullnameText.get(), ageText.get(), phoneText.get(), locationText.get())
+    back.edit(selected[0], fullnameText.get(), birthdayText.get(), phoneText.get(), locationText.get())
     fullnameEntry.delete(0, END)
-    ageEntry.delete(0, END)
+    birthdayEntry.delete(0, END)
     phoneEntry.delete(0, END)
     locationEntry.delete(0, END)
     view_items()
@@ -124,7 +126,7 @@ editButton.grid(row=5, column=2, columnspan=2)
 def remove_item():
     back.remove(selected[0])
     fullnameEntry.delete(0, END)
-    ageEntry.delete(0, END)
+    birthdayEntry.delete(0, END)
     phoneEntry.delete(0, END)
     locationEntry.delete(0, END)
     view_items()
@@ -166,3 +168,12 @@ window.mainloop()
 
 
 # ============================== COMMENT ============================== 
+
+
+
+
+
+
+
+# current = JalaliDate.today()
+# print(f"age:{current.year - int(birthdayText.split()[0]) - ((current.month, current.day) < (int(birthdayText.spl[1]), int(birthday[2])))}")
