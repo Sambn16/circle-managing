@@ -2,34 +2,68 @@ import sqlite3
 
 
 def connect():
-    conn = sqlite3.connect("people.db")
+    conn = sqlite3.connect("data.db")
     cur = conn.cursor()
-    cur.execute(
-        'CREATE TABLE IF NOT EXISTS friends (id INTEGER PRIMARY KEY, fullname TEXT, birthday INTEGER, phone INTEGER, location TEXT)'
-    )
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS Users (id INTEGER PRIMARY KEY,
+                                      chat_id INTEGER,
+                                      name TEXT,
+                                      birthday INTEGER)
+    """)
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS Friends (id INTEGER PRIMARY KEY,
+                                        fullname TEXT,
+                                        nickname TEXT,
+                                        birthday INTEGER,
+                                        phone INTEGER,
+                                        location TEXT,
+                                        friend_of INTEGER NOT NULL,
+                                        FOREIGN KEY(friend_of) REFERENCES Users(chat_id))
+        """)
+    
     conn.commit()
     conn.close()
 
 
-def insert(fullname, birthday, phone, location):
-    conn = sqlite3.connect("people.db")
+def user_data_insert(chat_id, name, birthday=0000-00-00):
+    conn = sqlite3.connect("data.db")
     cur = conn.cursor()
-    cur.execute("INSERT INTO friends VALUES (NULL, ?,?,?,?)", (fullname, birthday, phone, location))
+    cur.execute("INSERT INTO Users VALUES (NULL, ?,?,?)", (chat_id, name, birthday))
     conn.commit()
     conn.close()
 
 
-def view():
-    conn = sqlite3.connect("people.db")
+def user_data_view(chat_id):
+    conn = sqlite3.connect("data.db")
     cur = conn.cursor()
-    cur.execute("SELECT * FROM friends")
+    cur.execute("SELECT * FROM Users WHERE chat_id=?", (chat_id,))
+    result = cur.fetchall()
+    conn.close()
+    return result
+
+
+# ======================== FRIENDS SECTION ============================
+
+
+def insert(fullname, nickname, birthday, phone, location, friend_of):
+    conn = sqlite3.connect("data.db")
+    cur = conn.cursor()
+    cur.execute("INSERT INTO friends VALUES (NULL, ?,?,?,?,?,?)", (fullname, nickname, birthday, phone, location, friend_of))
+    conn.commit()
+    conn.close()
+
+
+def view(chat_id):
+    conn = sqlite3.connect("data.db")
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM Friends WHERE friend_of=?", (chat_id,))
     rows = cur.fetchall()
     conn.close()
     return rows
 
 
 def search(fullname):
-    conn = sqlite3.connect("people.db")
+    conn = sqlite3.connect("data.db")
     cur = conn.cursor()
     cur.execute("SELECT * FROM friends WHERE fullname LIKE ?", ('%' + fullname + '%',))
     rows = cur.fetchall()
@@ -38,7 +72,7 @@ def search(fullname):
 
 
 def remove(id):
-    conn = sqlite3.connect("people.db")
+    conn = sqlite3.connect("data.db")
     cur = conn.cursor()
     cur.execute("DELETE FROM friends WHERE id=?", (id,))
     conn.commit()
@@ -46,7 +80,7 @@ def remove(id):
 
 
 def edit(id, fullname, birthday, phone, location):
-    conn = sqlite3.connect("people.db")
+    conn = sqlite3.connect("data.db")
     cur = conn.cursor()
     cur.execute("UPDATE friends SET fullname=?, birthday=?, phone=?, location=? WHERE id=?", (fullname, birthday, phone, location, id))
     conn.commit()
