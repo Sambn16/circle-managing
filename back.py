@@ -71,18 +71,18 @@ def search(fullname):
     return rows
 
 
-def remove(id):
+def remove(fullname):
     conn = sqlite3.connect("data.db")
     cur = conn.cursor()
-    cur.execute("DELETE FROM friends WHERE id=?", (id,))
+    cur.execute("DELETE FROM Friends WHERE fullname=?", (fullname,))
     conn.commit()
     conn.close()
 
 
-def edit(id, fullname, birthday, phone, location):
+def edit(fullname, nickname, birthday, phone, location, old_fullname):
     conn = sqlite3.connect("data.db")
     cur = conn.cursor()
-    cur.execute("UPDATE friends SET fullname=?, birthday=?, phone=?, location=? WHERE id=?", (fullname, birthday, phone, location, id))
+    cur.execute("UPDATE Friends SET fullname=?, nickname=?, birthday=?, phone=?, location=? WHERE fullname=?", (fullname, nickname, birthday, phone, location, old_fullname))
     conn.commit()
     conn.close()
 
