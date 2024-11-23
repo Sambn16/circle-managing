@@ -4,10 +4,12 @@ from pyromod import *
 import back
 
 app = Client(
-    name="NAME",
-    api_id="API ID",
-    api_hash="API HASH",
-    bot_token="TOKEN"
+    
+    
+    name="bot",
+    api_id="123123123",
+    api_hash="blbl12345",
+    bot_token="blahblah1234"
 )
 
 
@@ -26,19 +28,26 @@ async def start_command(client: Client, message: Message):
         await message.reply_text(f"something went wrong, please contact the admin.")
 
 
+# ========================= HELP COMMAND =========================
+#     sends a message to guide the user to how to use the bot
+
+@app.on_message(filters.command("help") | filters.regex("help"))
+async def help_command(client: Client, message: Message):
+    await message.reply_text("Here you are! As you probably know, I'm a bot that helps you manage your circle of connections, wether it's a friend, a co-worker, a classmate or a partner. Here are the command that would help you:\n\n/start - The main command to start the bot.\n/help - You just used it! Sends this message to guide you.\n/add - To add a friend. You can send 'Add' as well, as it's shown in the buttons below.\n/my_friends - To show you a list of all your friends that are added to the bot. You can also send 'List of Friends' by tapping the button below.\n\nHappy managing your circle!")
+
+
 # ========================= ADD COMMAND =========================
 # asking questions about the person they want to add as their friends and saving the friends data
 
 @app.on_message(filters.command("add") | filters.regex("Add") | filters.regex("add"))
 async def add_friend(client: Client, message: Message):
-    fullname = await client.ask(chat_id=message.from_user.id, text="So you wanna add one of your friends? Okay! What's the full name of this fella?")
-    nickname = await client.ask(chat_id=message.from_user.id, text=f"Okay! So what do you call {fullname.text}?")
-    birthday = await client.ask(chat_id=message.from_user.id, text=f"Great! When is their birthday anyway? \n\n It must be in (YYYY-MM-DD) format!")
-    phone = await client.ask(chat_id=message.from_user.id, text=f"Now it's time for their phone number.")
-    location = await client.ask(chat_id=message.from_user.id, text=f"And where do they live?")
+    fullname = await client.ask(chat_id=message.from_user.id, text="So you wanna add one of your friends? Okay! What's the full name of this fella?", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(text="cancel", callback_data="cancel")]]))
+    nickname = await client.ask(chat_id=message.from_user.id, text=f"Okay! So what do you call {fullname.text}?", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(text="cancel", callback_data="cancel")]]))
+    birthday = await client.ask(chat_id=message.from_user.id, text=f"Great! When is their birthday anyway? \n\n It must be in (YYYY-MM-DD) format!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(text="cancel", callback_data="cancel")]]))
+    phone = await client.ask(chat_id=message.from_user.id, text=f"Now it's time for their phone number.", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(text="cancel", callback_data="cancel")]]))
+    location = await client.ask(chat_id=message.from_user.id, text=f"And where do they live?", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(text="cancel", callback_data="cancel")]]))
     back.insert(fullname.text, nickname.text, birthday.text, int(phone.text), location.text, message.from_user.id)
     await message.reply_text(f"Awesome! You just added a new friend! it's: \n**{fullname.text}**, they're called **{nickname.text}**, they're born in **{birthday.text}**, their phone number is **{phone.text}** and they live in **{location.text}**.\nTo see a list of all of your friends, you can use the command '/my_friends' or type 'List of Friends' or tap the button below.", parse_mode=enums.ParseMode.MARKDOWN)
-
 
 # ========================= MY FRIENDS COMMAND =========================
 #      show a list of their friends that are stored in the database
@@ -46,24 +55,27 @@ async def add_friend(client: Client, message: Message):
 @app.on_message(filters.command("my_friends") | filters.regex("List of Friends"))
 async def show_list(client: Client, message: Message):
     friends = back.view(message.from_user.id)
-    # print(friends[0][1])
     text = ""
     for friend in friends:
         text += f"╭ 👤 Fullname: {friend[1]}\n┊ 💬 Nickname: {friend[2]}\n┊ 🥳 Birthday: {friend[3]}\n┊ 📞 Phone Number: {friend[4]}\n╰ 📍 Location: {friend[5]}\n\n\n"
-    await message.reply_text(text, reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(text="Show seperately", callback_data="show")],[InlineKeyboardButton(text="Edit", callback_data="edit"), InlineKeyboardButton(text="Delete", callback_data="delete")]]))
+    await message.reply_text(text, reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(text="Show seperately", callback_data="show")],[InlineKeyboardButton(text="Edit", callback_data="edit"), InlineKeyboardButton(text="Add", callback_data="add")],[InlineKeyboardButton(text="Delete", callback_data="delete")]]))
 
 # ========================= BUTTON ACTIONS =========================
 #      how should every button behave, using callback queries
 
 @app.on_callback_query()
 async def buttons(client: Client, callback: CallbackQuery):
-    
     friends = back.view(callback.from_user.id)
     list_of_friends = []
     for friend in friends:
         list_of_friends.append([friend[1]])
 
-    if callback.data == "edit":
+    if callback.data == "cancel":
+        await callback.answer()
+        await callback.message.edit_text("Okay! Go back to /start!", reply_markup=None)
+        await client.stop_listening(chat_id=callback.from_user.id)
+
+    elif callback.data == "edit":
         await callback.answer()
         friend_to_edit = await client.ask(chat_id=callback.from_user.id,text="So you wanna edit some information about a friend. Which friend is it?", reply_markup=ReplyKeyboardMarkup(list_of_friends, resize_keyboard=True, one_time_keyboard=True))
         
@@ -117,9 +129,29 @@ async def buttons(client: Client, callback: CallbackQuery):
         for friend in friends:
             await callback.message.reply_text(f"╭ 👤 Fullname: {friend[1]}\n┊ 💬 Nickname: {friend[2]}\n┊ 🥳 Birthday: {friend[3]}\n┊ 📞 Phone Number: {friend[4]}\n╰ 📍 Location: {friend[5]}")
 
+    elif callback.data == "add":
+        await callback.answer()
+        fullname = await client.ask(chat_id=callback.from_user.id, text="So you wanna add one of your friends? Okay! What's the full name of this fella?", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(text="cancel", callback_data="cancel")]]))
+        nickname = await client.ask(chat_id=callback.from_user.id, text=f"Okay! So what do you call {fullname.text}?", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(text="cancel", callback_data="cancel")]]))
+        birthday = await client.ask(chat_id=callback.from_user.id, text=f"Great! When is their birthday anyway? \n\n It must be in (YYYY-MM-DD) format!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(text="cancel", callback_data="cancel")]]))
+        phone = await client.ask(chat_id=callback.from_user.id, text=f"Now it's time for their phone number.", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(text="cancel", callback_data="cancel")]]))
+        location = await client.ask(chat_id=callback.from_user.id, text=f"And where do they live?", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(text="cancel", callback_data="cancel")]]))
+        back.insert(fullname.text, nickname.text, birthday.text, int(phone.text), location.text, callback.from_user.id)
+        await callback.message.reply_text(f"Awesome! You just added a new friend! it's: \n**{fullname.text}**, they're called **{nickname.text}**, they're born in **{birthday.text}**, their phone number is **{phone.text}** and they live in **{location.text}**.\nTo see a list of all of your friends, you can use the command '/my_friends' or type 'List of Friends' or tap the button below.", parse_mode=enums.ParseMode.MARKDOWN)
 
-    else: 
-        await callback.message.reply_text(f"something went wrong, please contact the admin.")
+
+
+@app.on_callback_query()
+async def cancel_conversation(client: Client, callback: CallbackQuery):
+    if callback.data == "cancel":
+        callback.message.reply_text("Okay!")
+
+# ========================= BIRTHDAY REMINDING =========================
+#      all of the functionality of the birthday reminding system
+
+
+
+
 
 
 print("START")  # to  see  if  the  bot  has  started
